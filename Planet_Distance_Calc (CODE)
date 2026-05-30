@@ -55,7 +55,7 @@ classdef Planet_Distance_Calc < matlab.apps.AppBase
                 case "Messier 87"
                     d0 = 53000000; 
                     y = d0 * exp(H0 * x);
-                    plot(app.UIAxes, x, y, "LineWidth", 2, "Color", "black")
+                    plot(app.UIAxes, x, y, "LineWidth", 2, "Color", "cyan")
                     title(app.UIAxes, "Messier 87 Distance Expansion")
 
                 case "NGC 4603"
