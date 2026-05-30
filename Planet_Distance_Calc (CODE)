@@ -1,0 +1,171 @@
+classdef Planet_Distance_Calc < matlab.apps.AppBase
+
+    % Properties that correspond to app components
+    properties (Access = public)
+        UIFigure                  matlab.ui.Figure
+        ResetButton               matlab.ui.control.Button
+        SolarSystemDistanceLabel  matlab.ui.control.Label
+        CalculateDistanceButton   matlab.ui.control.Button
+        SolarSystemDropDown       matlab.ui.control.DropDown
+        SolarSystemDropDownLabel  matlab.ui.control.Label
+        UIAxes                    matlab.ui.control.UIAxes
+    end
+
+    
+    properties (Access = private)
+        resetgraph % Description
+        calcbuttonpressed % Description
+    end
+    
+
+    % Callbacks that handle component events
+    methods (Access = private)
+
+        % Code that executes after component creation
+        function startupFcn(app)
+            app.resetgraph = true;
+        end
+
+        % Callback function: CalculateDistanceButton, SolarSystemDropDown
+        function CalculateDistanceButtonPushed(app, event)
+            if strcmp(event.EventName, 'ValueChanged')
+                cla(app.UIAxes)
+                return;
+            end
+
+            value = app.SolarSystemDropDown.Value;
+
+            x = 0:10:1000; 
+            
+            H0 = 7.16e-5; 
+
+            switch value
+                case 'Messier 81'
+                    d0 = 12000000; 
+                    y = d0 * exp(H0 * x);
+                    plot(app.UIAxes, x, y, "LineWidth", 2, "Color", "blue")
+                    title(app.UIAxes, "Messier 81 Distance Expansion")
+
+                case "Sombrero Galaxy"
+                    d0 = 28000000; 
+                    y = d0 * exp(H0 * x);
+                    plot(app.UIAxes, x, y, "LineWidth", 2, "Color", "magenta")
+                    title(app.UIAxes, "Sombrero Galaxy Distance Expansion")
+
+                case "Messier 87"
+                    d0 = 53000000; 
+                    y = d0 * exp(H0 * x);
+                    plot(app.UIAxes, x, y, "LineWidth", 2, "Color", "black")
+                    title(app.UIAxes, "Messier 87 Distance Expansion")
+
+                case "NGC 4603"
+                    d0 = 107000000; 
+                    y = d0 * exp(H0 * x);
+                    plot(app.UIAxes, x, y, "LineWidth", 2, "Color", "green")
+                    title(app.UIAxes, "NGC 4603 Distance Expansion")
+            end
+            autorampslim = [min(x) max(x)];
+            app.UIAxes.XLim = autorampslim;
+            
+            if min(y) == max(y)
+                app.UIAxes.YLim = [0 100]; 
+            else
+                app.UIAxes.YLim = [min(y) max(y)];
+            end
+            app.resetgraph = false;
+        end
+
+        % Button pushed function: ResetButton
+        function ResetButtonPushed(app, event)
+            cla(app.UIAxes);
+            app.resetgraph = true;
+            app.SolarSystemDropDown.Enable = true;
+        end
+    end
+
+    % Component initialization
+    methods (Access = private)
+
+        % Create UIFigure and components
+        function createComponents(app)
+
+            % Create UIFigure and hide until all components are created
+            app.UIFigure = uifigure('Visible', 'off');
+            app.UIFigure.Position = [100 100 757 740];
+            app.UIFigure.Name = 'MATLAB App';
+
+            % Create UIAxes
+            app.UIAxes = uiaxes(app.UIFigure);
+            title(app.UIAxes, 'Distance Graph')
+            xlabel(app.UIAxes, 'Time (Millions)')
+            ylabel(app.UIAxes, 'Distance (Light Years)')
+            zlabel(app.UIAxes, 'Z')
+            app.UIAxes.XLim = [0 100];
+            app.UIAxes.YLim = [0 100];
+            app.UIAxes.Position = [66 133 610 418];
+
+            % Create SolarSystemDropDownLabel
+            app.SolarSystemDropDownLabel = uilabel(app.UIFigure);
+            app.SolarSystemDropDownLabel.HorizontalAlignment = 'right';
+            app.SolarSystemDropDownLabel.Position = [66 573 76 22];
+            app.SolarSystemDropDownLabel.Text = 'Solar System';
+
+            % Create SolarSystemDropDown
+            app.SolarSystemDropDown = uidropdown(app.UIFigure);
+            app.SolarSystemDropDown.Items = {'Messier 81', 'Sombrero Galaxy', 'Messier 87', 'NGC 4603'};
+            app.SolarSystemDropDown.ValueChangedFcn = createCallbackFcn(app, @CalculateDistanceButtonPushed, true);
+            app.SolarSystemDropDown.Position = [169 573 100 22];
+            app.SolarSystemDropDown.Value = 'Messier 81';
+
+            % Create CalculateDistanceButton
+            app.CalculateDistanceButton = uibutton(app.UIFigure, 'push');
+            app.CalculateDistanceButton.ButtonPushedFcn = createCallbackFcn(app, @CalculateDistanceButtonPushed, true);
+            app.CalculateDistanceButton.Position = [93 65 581 57];
+            app.CalculateDistanceButton.Text = 'Calculate Distance';
+
+            % Create SolarSystemDistanceLabel
+            app.SolarSystemDistanceLabel = uilabel(app.UIFigure);
+            app.SolarSystemDistanceLabel.HorizontalAlignment = 'center';
+            app.SolarSystemDistanceLabel.FontSize = 36;
+            app.SolarSystemDistanceLabel.Position = [82 672 604 47];
+            app.SolarSystemDistanceLabel.Text = 'Solar System Distance Calculator';
+
+            % Create ResetButton
+            app.ResetButton = uibutton(app.UIFigure, 'push');
+            app.ResetButton.ButtonPushedFcn = createCallbackFcn(app, @ResetButtonPushed, true);
+            app.ResetButton.Position = [501 573 100 22];
+            app.ResetButton.Text = 'Reset';
+
+            % Show the figure after all components are created
+            app.UIFigure.Visible = 'on';
+        end
+    end
+
+    % App creation and deletion
+    methods (Access = public)
+
+        % Construct app
+        function app = Planet_Distance_Calc
+
+            % Create UIFigure and components
+            createComponents(app)
+
+            % Register the app with App Designer
+            registerApp(app, app.UIFigure)
+
+            % Execute the startup function
+            runStartupFcn(app, @startupFcn)
+
+            if nargout == 0
+                clear app
+            end
+        end
+
+        % Code that executes before app deletion
+        function delete(app)
+
+            % Delete UIFigure when app is deleted
+            delete(app.UIFigure)
+        end
+    end
+end
